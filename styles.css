@@ -80,39 +80,38 @@ h1 {
   margin-top: 0.95rem;
 }
 
-.progress-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.7rem;
-  margin-bottom: 0.45rem;
-  color: #eddff7;
-  font-size: 0.88rem;
-  font-weight: 600;
+.progress-percent {
+  margin-bottom: 0.4rem;
+  color: #f6dced;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .progress-track {
+  display: block;
   width: 100%;
   height: 14px;
-  border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 999px;
   overflow: hidden;
+  appearance: none;
 }
 
-.progress-fill {
-  width: 0%;
-  height: 100%;
-  border-radius: inherit;
+.progress-track::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+.progress-track::-webkit-progress-value {
   background: linear-gradient(90deg, #ff8bc2 0%, #ffb6df 45%, #e7bbff 100%);
+  border-radius: 999px;
   transition: width 500ms ease;
 }
 
-.progress-scale {
-  margin-top: 0.3rem;
-  display: flex;
-  justify-content: space-between;
-  color: #d8cde9;
-  font-size: 0.72rem;
+.progress-track::-moz-progress-bar {
+  background: linear-gradient(90deg, #ff8bc2 0%, #ffb6df 45%, #e7bbff 100%);
+  border-radius: 999px;
 }
 
 .unit {
@@ -196,18 +195,13 @@ h1 {
     margin-top: 0.65rem;
   }
 
-  .progress-head {
-    font-size: 0.75rem;
-    margin-bottom: 0.35rem;
+  .progress-percent {
+    margin-bottom: 0.3rem;
+    font-size: 0.82rem;
   }
 
   .progress-track {
     height: 11px;
-  }
-
-  .progress-scale {
-    margin-top: 0.25rem;
-    font-size: 0.66rem;
   }
 
   .unit {

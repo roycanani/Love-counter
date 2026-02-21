@@ -5,8 +5,7 @@ const secondsElement = document.getElementById("seconds");
 const targetInfoElement = document.getElementById("target-info");
 const statusElement = document.getElementById("status");
 const progressPercentElement = document.getElementById("progress-percent");
-const progressFillElement = document.getElementById("progress-fill");
-const progressTrackElement = document.querySelector(".progress-track");
+const progressBarElement = document.getElementById("progress-bar");
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -35,8 +34,8 @@ function setProgress(current, startDate, targetDate) {
 
   if (totalMs <= 0) {
     progressPercentElement.textContent = "0%";
-    progressFillElement.style.width = "0%";
-    progressTrackElement.setAttribute("aria-valuenow", "0");
+    progressBarElement.value = 0;
+    progressBarElement.setAttribute("aria-valuenow", "0");
     return;
   }
 
@@ -45,9 +44,9 @@ function setProgress(current, startDate, targetDate) {
   const displayProgress = progress.toFixed(2);
 
   progressPercentElement.textContent = `${displayProgress}%`;
-  progressFillElement.style.width = `${progress}%`;
-  progressTrackElement.setAttribute("aria-valuenow", String(Math.round(progress)));
-  progressTrackElement.setAttribute("aria-valuetext", `${displayProgress}% complete`);
+  progressBarElement.value = progress;
+  progressBarElement.setAttribute("aria-valuenow", String(Math.round(progress)));
+  progressBarElement.setAttribute("aria-valuetext", `${displayProgress}% complete`);
 }
 
 function setCountdown(diffMs) {

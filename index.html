@@ -37,17 +37,8 @@
     </section>
 
     <section class="progress-wrap" aria-label="Travel time progress">
-      <div class="progress-head">
-        <span>Time passed since Jan 15</span>
-        <span id="progress-percent">0%</span>
-      </div>
-      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Trip progress">
-        <div id="progress-fill" class="progress-fill"></div>
-      </div>
-      <div class="progress-scale" aria-hidden="true">
-        <span>0%</span>
-        <span>100%</span>
-      </div>
+      <div id="progress-percent" class="progress-percent" aria-live="polite">0.00%</div>
+      <progress id="progress-bar" class="progress-track" value="0" max="100" aria-label="Trip progress from 0 to 100 percent"></progress>
     </section>
 
     <p class="love-line">Jade, no distance can dim what we’re building together. I’ll be home soon. ❤️</p>
