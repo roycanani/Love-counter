@@ -31,22 +31,23 @@ function setProgress(current, startDate, targetDate) {
   const startMs = startDate.getTime();
   const endMs = targetDate.getTime();
   const currentMs = current.getTime();
-  const total = endMs - startMs;
+  const totalMs = endMs - startMs;
 
-  if (total <= 0) {
+  if (totalMs <= 0) {
     progressPercentElement.textContent = "0%";
     progressFillElement.style.width = "0%";
     progressTrackElement.setAttribute("aria-valuenow", "0");
     return;
   }
 
-  const rawProgress = ((currentMs - startMs) / total) * 100;
-  const clamped = Math.min(100, Math.max(0, rawProgress));
-  const rounded = clamped.toFixed(1);
+  const elapsedMs = Math.min(Math.max(currentMs - startMs, 0), totalMs);
+  const progress = (elapsedMs / totalMs) * 100;
+  const displayProgress = progress.toFixed(2);
 
-  progressPercentElement.textContent = `${rounded}%`;
-  progressFillElement.style.width = `${clamped}%`;
-  progressTrackElement.setAttribute("aria-valuenow", String(Math.round(clamped)));
+  progressPercentElement.textContent = `${displayProgress}%`;
+  progressFillElement.style.width = `${progress}%`;
+  progressTrackElement.setAttribute("aria-valuenow", String(Math.round(progress)));
+  progressTrackElement.setAttribute("aria-valuetext", `${displayProgress}% complete`);
 }
 
 function setCountdown(diffMs) {
