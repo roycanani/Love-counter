@@ -37,7 +37,7 @@ function startCountdown() {
   const now = new Date();
   const targetDate = getTargetDate(now);
 
-  targetInfoElement.textContent = `Target: ${targetDate.toUTCString()} (GMT) / 21:20 Israel time on Feb 25`;
+  targetInfoElement.textContent = `Reunion target: ${targetDate.toUTCString()} (GMT) / 21:20 Israel time on Feb 25`;
 
   function tick() {
     const current = new Date();
@@ -45,7 +45,7 @@ function startCountdown() {
 
     if (diff <= 0) {
       setCountdown(0);
-      statusElement.textContent = "The countdown reached February 25, 19:20 GMT.";
+      statusElement.textContent = "You made it — welcome back to Jade. 💖";
       statusElement.classList.add("done");
       clearInterval(interval);
       return;

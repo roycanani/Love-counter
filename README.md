@@ -1,6 +1,6 @@
 # Love-counter
 
-A simple web app countdown to **February 25 at 19:20 GMT** (21:20 Israel time).
+A romantic, modern countdown web app to the reunion on **February 25 at 19:20 GMT** (21:20 Israel time), dedicated to Jade.
 
 ## Run
 
