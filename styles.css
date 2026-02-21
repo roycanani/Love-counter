@@ -200,7 +200,11 @@ h1 {
   }
 
   .love-photo {
-    width: min(100%, 220px);
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: auto;
+    height: auto;
+    object-fit: contain;
     border-radius: 14px;
   }
 
