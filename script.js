@@ -105,15 +105,15 @@ function launchConfetti() {
     y: -20 - Math.random() * viewportHeight * 0.35,
     size: 5 + Math.random() * 8,
     color: colors[Math.floor(Math.random() * colors.length)],
-    velocityX: -1.8 + Math.random() * 3.6,
-    velocityY: 2.2 + Math.random() * 3.2,
-    gravity: 0.04 + Math.random() * 0.04,
+    velocityX: -0.9 + Math.random() * 1.8,
+    velocityY: 1.2 + Math.random() * 1.9,
+    gravity: 0.022 + Math.random() * 0.025,
     rotation: Math.random() * Math.PI * 2,
     rotationSpeed: -0.2 + Math.random() * 0.4,
   }));
 
   const startTime = performance.now();
-  const durationMs = 5200;
+  const durationMs = 7200;
 
   function drawFrame(timestamp) {
     context.clearRect(0, 0, viewportWidth, viewportHeight);
