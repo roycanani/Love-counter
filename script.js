@@ -15,11 +15,16 @@ const carouselElement = document.getElementById("photo-carousel");
 const carouselPrevElement = document.getElementById("carousel-prev");
 const carouselNextElement = document.getElementById("carousel-next");
 
+const CONFETTI_DURATION_MS = 7200;
+const CAROUSEL_SLIDE_INTERVAL_MS = 6000;
+
 let activeTargetDate = null;
 let confettiAnimationFrameId = null;
 let confettiClearTimeoutId = null;
 let activeCarouselIndex = 0;
-let carouselAutoSlideIntervalId = null;
+let carouselAutoSlideTimeoutId = null;
+let carouselAutoStartTimeoutId = null;
+let isCarouselAutoSlideActive = false;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -118,7 +123,7 @@ function launchConfetti() {
   }));
 
   const startTime = performance.now();
-  const durationMs = 7200;
+  const durationMs = CONFETTI_DURATION_MS;
 
   function drawFrame(timestamp) {
     context.clearRect(0, 0, viewportWidth, viewportHeight);
@@ -151,6 +156,8 @@ function launchConfetti() {
     context.clearRect(0, 0, viewportWidth, viewportHeight);
     confettiClearTimeoutId = null;
   }, durationMs + 200);
+
+  return durationMs;
 }
 
 function showSurpriseMessage(message) {
@@ -194,7 +201,45 @@ function updateCarousel(index) {
   });
 }
 
-function setupCarousel() {
+function clearCarouselTimers() {
+  if (carouselAutoSlideTimeoutId) {
+    window.clearTimeout(carouselAutoSlideTimeoutId);
+    carouselAutoSlideTimeoutId = null;
+  }
+
+  if (carouselAutoStartTimeoutId) {
+    window.clearTimeout(carouselAutoStartTimeoutId);
+    carouselAutoStartTimeoutId = null;
+  }
+}
+
+function resetCarouselAutoSlideTimer() {
+  if (!isCarouselAutoSlideActive || !carouselElement) {
+    return;
+  }
+
+  if (carouselAutoSlideTimeoutId) {
+    window.clearTimeout(carouselAutoSlideTimeoutId);
+  }
+
+  carouselAutoSlideTimeoutId = window.setTimeout(() => {
+    const images = carouselElement.querySelectorAll(".carousel-image");
+    if (!images.length) {
+      return;
+    }
+
+    const nextIndex = (activeCarouselIndex + 1) % images.length;
+    updateCarousel(nextIndex);
+    resetCarouselAutoSlideTimer();
+  }, CAROUSEL_SLIDE_INTERVAL_MS);
+}
+
+function startCarouselAutoSlide() {
+  isCarouselAutoSlideActive = true;
+  resetCarouselAutoSlideTimer();
+}
+
+function setupCarousel(initialAutoStartDelayMs = 0) {
   if (!carouselElement || !carouselPrevElement || !carouselNextElement) {
     return;
   }
@@ -205,21 +250,30 @@ function setupCarousel() {
   }
 
   updateCarousel(0);
+  clearCarouselTimers();
+  isCarouselAutoSlideActive = false;
 
-  if (carouselAutoSlideIntervalId) {
-    window.clearInterval(carouselAutoSlideIntervalId);
+  if (initialAutoStartDelayMs > 0) {
+    carouselAutoStartTimeoutId = window.setTimeout(() => {
+      startCarouselAutoSlide();
+      carouselAutoStartTimeoutId = null;
+    }, initialAutoStartDelayMs);
+  } else {
+    startCarouselAutoSlide();
   }
-
-  carouselAutoSlideIntervalId = window.setInterval(() => {
-    updateCarousel(activeCarouselIndex + 1);
-  }, 3000);
 
   carouselPrevElement.addEventListener("click", () => {
     updateCarousel(activeCarouselIndex - 1);
+    if (isCarouselAutoSlideActive) {
+      resetCarouselAutoSlideTimer();
+    }
   });
 
   carouselNextElement.addEventListener("click", () => {
     updateCarousel(activeCarouselIndex + 1);
+    if (isCarouselAutoSlideActive) {
+      resetCarouselAutoSlideTimer();
+    }
   });
 }
 
@@ -228,12 +282,12 @@ function triggerFinal48Celebration(currentDate, targetDate) {
   const fortyEightHoursMs = 48 * 60 * 60 * 1000;
 
   if (remainingMs <= 0 || remainingMs >= fortyEightHoursMs) {
-    return;
+    return 0;
   }
 
   const hoursLeft = Math.ceil(remainingMs / (60 * 60 * 1000));
   showSurpriseMessage(`Only ${hoursLeft} hours left ❤️`);
-  launchConfetti();
+  return launchConfetti();
 }
 
 function triggerTimeLeftEffect() {
@@ -263,13 +317,12 @@ function triggerTimeLeftEffect() {
 }
 
 function startCountdown() {
-  setupCarousel();
-
   const now = new Date();
   const targetDate = getTargetDate(now);
   const startDate = getStartDateForTarget(targetDate);
   activeTargetDate = targetDate;
-  triggerFinal48Celebration(now, targetDate);
+  const confettiDuration = triggerFinal48Celebration(now, targetDate);
+  setupCarousel(confettiDuration);
 
   if (timeLeftButtonElement) {
     timeLeftButtonElement.addEventListener("click", triggerTimeLeftEffect);
