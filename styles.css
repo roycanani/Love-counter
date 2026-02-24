@@ -116,13 +116,54 @@ h1 {
   margin: 1rem 0 1rem;
 }
 
-.love-photo {
+.photo-carousel {
+  position: relative;
   width: min(100%, 340px);
+  margin: 0 auto;
+}
+
+.love-photo {
+  width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.24);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+
+.carousel-image {
+  display: none;
+}
+
+.carousel-image.is-active {
+  display: block;
+}
+
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 999px;
+  background: rgba(22, 18, 36, 0.72);
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.carousel-control.prev {
+  left: 0.4rem;
+}
+
+.carousel-control.next {
+  right: 0.4rem;
+}
+
+.carousel-control:hover {
+  filter: brightness(1.15);
 }
 
 .love-line {
@@ -289,6 +330,12 @@ h1 {
     height: auto;
     object-fit: contain;
     border-radius: 14px;
+  }
+
+  .carousel-control {
+    width: 1.8rem;
+    height: 1.8rem;
+    font-size: 1.15rem;
   }
 
   .love-line {

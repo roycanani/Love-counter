@@ -11,10 +11,15 @@ const surpriseElement = document.getElementById("surprise");
 const surpriseMessageElement = document.getElementById("surprise-message");
 const timerElement = document.querySelector(".timer");
 const timeLeftButtonElement = document.getElementById("time-left-button");
+const carouselElement = document.getElementById("photo-carousel");
+const carouselPrevElement = document.getElementById("carousel-prev");
+const carouselNextElement = document.getElementById("carousel-next");
 
 let activeTargetDate = null;
 let confettiAnimationFrameId = null;
 let confettiClearTimeoutId = null;
+let activeCarouselIndex = 0;
+let carouselAutoSlideIntervalId = null;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -171,6 +176,53 @@ function flashTimer() {
   timerElement.classList.add("flash");
 }
 
+function updateCarousel(index) {
+  if (!carouselElement) {
+    return;
+  }
+
+  const images = carouselElement.querySelectorAll(".carousel-image");
+  if (!images.length) {
+    return;
+  }
+
+  activeCarouselIndex = (index + images.length) % images.length;
+  images.forEach((imageElement, imageIndex) => {
+    const isActive = imageIndex === activeCarouselIndex;
+    imageElement.classList.toggle("is-active", isActive);
+    imageElement.setAttribute("aria-hidden", String(!isActive));
+  });
+}
+
+function setupCarousel() {
+  if (!carouselElement || !carouselPrevElement || !carouselNextElement) {
+    return;
+  }
+
+  const images = carouselElement.querySelectorAll(".carousel-image");
+  if (!images.length) {
+    return;
+  }
+
+  updateCarousel(0);
+
+  if (carouselAutoSlideIntervalId) {
+    window.clearInterval(carouselAutoSlideIntervalId);
+  }
+
+  carouselAutoSlideIntervalId = window.setInterval(() => {
+    updateCarousel(activeCarouselIndex + 1);
+  }, 3000);
+
+  carouselPrevElement.addEventListener("click", () => {
+    updateCarousel(activeCarouselIndex - 1);
+  });
+
+  carouselNextElement.addEventListener("click", () => {
+    updateCarousel(activeCarouselIndex + 1);
+  });
+}
+
 function triggerFinal48Celebration(currentDate, targetDate) {
   const remainingMs = targetDate.getTime() - currentDate.getTime();
   const fortyEightHoursMs = 48 * 60 * 60 * 1000;
@@ -211,6 +263,8 @@ function triggerTimeLeftEffect() {
 }
 
 function startCountdown() {
+  setupCarousel();
+
   const now = new Date();
   const targetDate = getTargetDate(now);
   const startDate = getStartDateForTarget(targetDate);
