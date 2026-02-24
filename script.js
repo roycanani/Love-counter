@@ -9,6 +9,12 @@ const progressBarElement = document.getElementById("progress-bar");
 const confettiLayerElement = document.getElementById("confetti-layer");
 const surpriseElement = document.getElementById("surprise");
 const surpriseMessageElement = document.getElementById("surprise-message");
+const timerElement = document.querySelector(".timer");
+const timeLeftButtonElement = document.getElementById("time-left-button");
+
+let activeTargetDate = null;
+let confettiAnimationFrameId = null;
+let confettiClearTimeoutId = null;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -66,41 +72,103 @@ function setCountdown(diffMs) {
 }
 
 function launchConfetti() {
-  if (!confettiLayerElement) {
+  if (!confettiLayerElement || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return;
   }
 
-  const colors = ["#ff8bc2", "#ffb6df", "#e7bbff", "#ffd5ea", "#ffffff"];
-  const pieces = 120;
-
-  for (let index = 0; index < pieces; index += 1) {
-    const piece = document.createElement("span");
-    piece.className = "confetti-piece";
-    piece.style.left = `${Math.random() * 100}vw`;
-    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    piece.style.setProperty("--fall-delay", `${Math.random() * 0.45}s`);
-    piece.style.setProperty("--fall-duration", `${3.5 + Math.random() * 2.3}s`);
-    piece.style.setProperty("--drift-x", `${-140 + Math.random() * 280}px`);
-    piece.style.setProperty("--spin", `${360 + Math.random() * 720}deg`);
-    confettiLayerElement.appendChild(piece);
+  const canvas = confettiLayerElement;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return;
   }
 
-  window.setTimeout(() => {
-    confettiLayerElement.textContent = "";
-  }, 6500);
+  if (confettiAnimationFrameId) {
+    window.cancelAnimationFrame(confettiAnimationFrameId);
+  }
+
+  if (confettiClearTimeoutId) {
+    window.clearTimeout(confettiClearTimeoutId);
+  }
+
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(viewportWidth * dpr);
+  canvas.height = Math.floor(viewportHeight * dpr);
+  canvas.style.width = `${viewportWidth}px`;
+  canvas.style.height = `${viewportHeight}px`;
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const colors = ["#ff8bc2", "#ffb6df", "#e7bbff", "#ffd5ea", "#ffffff"];
+  const particles = Array.from({ length: 170 }, () => ({
+    x: Math.random() * viewportWidth,
+    y: -20 - Math.random() * viewportHeight * 0.35,
+    size: 5 + Math.random() * 8,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    velocityX: -1.8 + Math.random() * 3.6,
+    velocityY: 2.2 + Math.random() * 3.2,
+    gravity: 0.04 + Math.random() * 0.04,
+    rotation: Math.random() * Math.PI * 2,
+    rotationSpeed: -0.2 + Math.random() * 0.4,
+  }));
+
+  const startTime = performance.now();
+  const durationMs = 5200;
+
+  function drawFrame(timestamp) {
+    context.clearRect(0, 0, viewportWidth, viewportHeight);
+
+    for (const particle of particles) {
+      particle.x += particle.velocityX;
+      particle.y += particle.velocityY;
+      particle.velocityY += particle.gravity;
+      particle.rotation += particle.rotationSpeed;
+
+      context.save();
+      context.translate(particle.x, particle.y);
+      context.rotate(particle.rotation);
+      context.fillStyle = particle.color;
+      context.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size * 1.5);
+      context.restore();
+    }
+
+    if (timestamp - startTime < durationMs) {
+      confettiAnimationFrameId = window.requestAnimationFrame(drawFrame);
+      return;
+    }
+
+    context.clearRect(0, 0, viewportWidth, viewportHeight);
+    confettiAnimationFrameId = null;
+  }
+
+  confettiAnimationFrameId = window.requestAnimationFrame(drawFrame);
+  confettiClearTimeoutId = window.setTimeout(() => {
+    context.clearRect(0, 0, viewportWidth, viewportHeight);
+    confettiClearTimeoutId = null;
+  }, durationMs + 200);
 }
 
-function showFinalHoursMessage(hoursLeft) {
+function showSurpriseMessage(message) {
   if (!surpriseElement || !surpriseMessageElement) {
     return;
   }
 
-  surpriseMessageElement.textContent = `Only ${hoursLeft} hours left ❤️`;
+  surpriseMessageElement.textContent = message;
   surpriseElement.classList.add("show");
 
   window.setTimeout(() => {
     surpriseElement.classList.remove("show");
   }, 5000);
+}
+
+function flashTimer() {
+  if (!timerElement) {
+    return;
+  }
+
+  timerElement.classList.remove("flash");
+  void timerElement.offsetWidth;
+  timerElement.classList.add("flash");
 }
 
 function triggerFinal48Celebration(currentDate, targetDate) {
@@ -112,15 +180,46 @@ function triggerFinal48Celebration(currentDate, targetDate) {
   }
 
   const hoursLeft = Math.ceil(remainingMs / (60 * 60 * 1000));
-  showFinalHoursMessage(hoursLeft);
+  showSurpriseMessage(`Only ${hoursLeft} hours left ❤️`);
   launchConfetti();
+}
+
+function triggerTimeLeftEffect() {
+  if (!activeTargetDate) {
+    return;
+  }
+
+  const now = new Date();
+  const remainingMs = activeTargetDate.getTime() - now.getTime();
+
+  if (remainingMs <= 0) {
+    showSurpriseMessage("It’s time — you’re finally together 💖");
+    launchConfetti();
+    flashTimer();
+    return;
+  }
+
+  const totalMinutes = Math.ceil(remainingMs / (60 * 1000));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+  const totalHoursLeft = Math.ceil(remainingMs / (60 * 60 * 1000));
+
+  showSurpriseMessage(`Only ${totalHoursLeft} hours left ❤️ (${days}d ${hours}h ${minutes}m)`);
+  launchConfetti();
+  flashTimer();
 }
 
 function startCountdown() {
   const now = new Date();
   const targetDate = getTargetDate(now);
   const startDate = getStartDateForTarget(targetDate);
+  activeTargetDate = targetDate;
   triggerFinal48Celebration(now, targetDate);
+
+  if (timeLeftButtonElement) {
+    timeLeftButtonElement.addEventListener("click", triggerTimeLeftEffect);
+  }
 
   targetInfoElement.textContent = `Reunion target: ${targetDate.toUTCString()} (GMT) / 21:20 Israel time on Feb 25`;
 

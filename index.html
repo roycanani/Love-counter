@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+  <canvas id="confetti-layer" class="confetti-layer" aria-hidden="true"></canvas>
   <div id="surprise" class="surprise" aria-live="polite" aria-atomic="true">
     <p id="surprise-message" class="surprise-message"></p>
   </div>
@@ -44,6 +44,8 @@
     <figure class="photo-wrap">
       <img class="love-photo" src="IMG_4867.jpeg" alt="A special memory with Jade" loading="lazy" />
     </figure>
+
+    <button id="time-left-button" class="time-left-button" type="button">✨ Show me how long is left</button>
 
     <section class="progress-wrap" aria-label="Travel time progress">
       <div id="progress-percent" class="progress-percent" aria-live="polite">0.00%</div>
