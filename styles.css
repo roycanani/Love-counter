@@ -121,6 +121,7 @@ h1 {
   width: min(100%, 340px);
   aspect-ratio: 4 / 5;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .love-photo {
@@ -138,7 +139,8 @@ h1 {
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 520ms ease;
+  transition: opacity 800ms ease-in-out;
+  will-change: opacity;
 }
 
 .carousel-image.is-active {

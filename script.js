@@ -25,6 +25,7 @@ let activeCarouselIndex = 0;
 let carouselAutoSlideTimeoutId = null;
 let carouselAutoStartTimeoutId = null;
 let isCarouselAutoSlideActive = false;
+let carouselPreloadPromise = null;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -213,6 +214,43 @@ function clearCarouselTimers() {
   }
 }
 
+function preloadCarouselImages() {
+  if (carouselPreloadPromise) {
+    return carouselPreloadPromise;
+  }
+
+  if (!carouselElement) {
+    carouselPreloadPromise = Promise.resolve();
+    return carouselPreloadPromise;
+  }
+
+  const images = Array.from(carouselElement.querySelectorAll(".carousel-image"));
+  const preloadTasks = images.map((imageElement) =>
+    new Promise((resolve) => {
+      const source = imageElement.currentSrc || imageElement.src;
+      if (!source) {
+        resolve();
+        return;
+      }
+
+      const preloadedImage = new Image();
+      preloadedImage.decoding = "async";
+      preloadedImage.src = source;
+
+      if (preloadedImage.complete) {
+        resolve();
+        return;
+      }
+
+      preloadedImage.onload = () => resolve();
+      preloadedImage.onerror = () => resolve();
+    })
+  );
+
+  carouselPreloadPromise = Promise.all(preloadTasks).then(() => undefined);
+  return carouselPreloadPromise;
+}
+
 function resetCarouselAutoSlideTimer() {
   if (!isCarouselAutoSlideActive || !carouselElement) {
     return;
@@ -253,14 +291,19 @@ function setupCarousel(initialAutoStartDelayMs = 0) {
   clearCarouselTimers();
   isCarouselAutoSlideActive = false;
 
-  if (initialAutoStartDelayMs > 0) {
-    carouselAutoStartTimeoutId = window.setTimeout(() => {
-      startCarouselAutoSlide();
-      carouselAutoStartTimeoutId = null;
-    }, initialAutoStartDelayMs);
-  } else {
+  const startAutoAfterDelay = () => {
+    if (initialAutoStartDelayMs > 0) {
+      carouselAutoStartTimeoutId = window.setTimeout(() => {
+        startCarouselAutoSlide();
+        carouselAutoStartTimeoutId = null;
+      }, initialAutoStartDelayMs);
+      return;
+    }
+
     startCarouselAutoSlide();
-  }
+  };
+
+  preloadCarouselImages().finally(startAutoAfterDelay);
 
   carouselPrevElement.addEventListener("click", () => {
     updateCarousel(activeCarouselIndex - 1);
