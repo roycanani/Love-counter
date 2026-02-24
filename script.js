@@ -251,6 +251,12 @@ function preloadCarouselImages() {
   return carouselPreloadPromise;
 }
 
+function wait(milliseconds) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, Math.max(0, milliseconds));
+  });
+}
+
 function resetCarouselAutoSlideTimer() {
   if (!isCarouselAutoSlideActive || !carouselElement) {
     return;
@@ -291,19 +297,14 @@ function setupCarousel(initialAutoStartDelayMs = 0) {
   clearCarouselTimers();
   isCarouselAutoSlideActive = false;
 
-  const startAutoAfterDelay = () => {
-    if (initialAutoStartDelayMs > 0) {
-      carouselAutoStartTimeoutId = window.setTimeout(() => {
-        startCarouselAutoSlide();
-        carouselAutoStartTimeoutId = null;
-      }, initialAutoStartDelayMs);
-      return;
-    }
+  const preloadTask = preloadCarouselImages();
+  const delayTask = wait(initialAutoStartDelayMs);
 
+  Promise.all([preloadTask, delayTask]).then(() => {
+    updateCarousel(0);
     startCarouselAutoSlide();
-  };
-
-  preloadCarouselImages().finally(startAutoAfterDelay);
+    carouselAutoStartTimeoutId = null;
+  });
 
   carouselPrevElement.addEventListener("click", () => {
     updateCarousel(activeCarouselIndex - 1);
