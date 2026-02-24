@@ -72,7 +72,7 @@ function setCountdown(diffMs) {
 }
 
 function launchConfetti() {
-  if (!confettiLayerElement || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (!confettiLayerElement) {
     return;
   }
 
