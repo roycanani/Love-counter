@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+  <div id="surprise" class="surprise" aria-live="polite" aria-atomic="true">
+    <p id="surprise-message" class="surprise-message"></p>
+  </div>
+
   <main class="container">
     <p class="eyebrow">One and a half months apart, one heartbeat closer</p>
     <h1>Counting every moment until I’m back with Jade</h1>
@@ -16,10 +21,6 @@
       Every sunrise on this trip reminds me how lucky I am to call you my fiancée.
       Every sunset is one day closer to holding you again.
     </p>
-
-    <figure class="photo-wrap">
-      <img class="love-photo" src="IMG_4867.jpeg" alt="A special memory with Jade" loading="lazy" />
-    </figure>
 
     <section class="timer" aria-live="polite" aria-atomic="true">
       <div class="unit">
@@ -39,6 +40,10 @@
         <span class="label">Seconds</span>
       </div>
     </section>
+
+    <figure class="photo-wrap">
+      <img class="love-photo" src="IMG_4867.jpeg" alt="A special memory with Jade" loading="lazy" />
+    </figure>
 
     <section class="progress-wrap" aria-label="Travel time progress">
       <div id="progress-percent" class="progress-percent" aria-live="polite">0.00%</div>

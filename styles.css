@@ -20,6 +20,54 @@ body {
   padding: 1.25rem;
 }
 
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -18px;
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  opacity: 0.92;
+  transform: translateY(0) rotate(0deg);
+  animation: confetti-fall var(--fall-duration, 4s) linear forwards;
+  animation-delay: var(--fall-delay, 0s);
+}
+
+.surprise {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-16px);
+  opacity: 0;
+  z-index: 30;
+  pointer-events: none;
+  transition: opacity 280ms ease, transform 280ms ease;
+}
+
+.surprise.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.surprise-message {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 139, 194, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff4fb;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
 .container {
   width: min(920px, 92vw);
   text-align: center;
@@ -65,7 +113,7 @@ h1 {
 }
 
 .photo-wrap {
-  margin: 0 0 1rem;
+  margin: 1rem 0 1rem;
 }
 
 .love-photo {
@@ -196,7 +244,7 @@ h1 {
   }
 
   .photo-wrap {
-    margin: 0 0 0.65rem;
+    margin: 0.65rem 0;
   }
 
   .love-photo {
@@ -248,5 +296,38 @@ h1 {
   .status {
     margin-top: 0.55rem;
     font-size: 0.8rem;
+  }
+
+  .surprise {
+    top: 0.7rem;
+  }
+
+  .surprise-message {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.95;
+  }
+
+  100% {
+    transform: translate3d(var(--drift-x, 0px), 108vh, 0) rotate(var(--spin, 540deg));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece,
+  .surprise {
+    animation: none;
+    transition: none;
   }
 }
