@@ -16,6 +16,8 @@ const carouselPrevElement = document.getElementById("carousel-prev");
 const carouselNextElement = document.getElementById("carousel-next");
 const youtubeBackgroundPlayerElement = document.getElementById("youtube-background-player");
 const musicToggleElement = document.getElementById("music-toggle");
+const musicGateElement = document.getElementById("music-gate");
+const musicGateButtonElement = document.getElementById("music-gate-button");
 
 const CONFETTI_DURATION_MS = 7200;
 const CAROUSEL_SLIDE_INTERVAL_MS = 6000;
@@ -30,28 +32,26 @@ let isCarouselAutoSlideActive = false;
 let carouselPreloadPromise = null;
 let isMusicUnavailable = false;
 let isMusicPlaying = false;
-let isYouTubePlayerLoaded = false;
 
-const YOUTUBE_SEARCH_QUERY = "ordinary alex warren";
-const TARGET_TIMEZONE = "Asia/Jerusalem";
+const YOUTUBE_SEARCH_QUERY = "Alex Warren Ordinary official audio";
 
 function getYouTubeEmbedUrl(autoplay) {
   const params = new URLSearchParams({
     autoplay: autoplay ? "1" : "0",
     controls: "1",
-    disablekb: "1",
-    enablejsapi: "1",
+    disablekb: "0",
     fs: "0",
     iv_load_policy: "3",
     listType: "search",
     list: YOUTUBE_SEARCH_QUERY,
-    loop: "1",
+    loop: "0",
     modestbranding: "1",
+    mute: "0",
     playsinline: "1",
     rel: "0",
   });
 
-  return `https://www.youtube-nocookie.com/embed/videoseries?${params.toString()}`;
+  return `https://www.youtube.com/embed?${params.toString()}`;
 }
 
 function pad(value) {
@@ -134,31 +134,12 @@ function updateMusicToggleUI() {
   musicToggleElement.disabled = false;
 }
 
-function sendYouTubeCommand(command) {
-  if (!youtubeBackgroundPlayerElement || !youtubeBackgroundPlayerElement.contentWindow || !isYouTubePlayerLoaded) {
-    return;
-  }
-
-  youtubeBackgroundPlayerElement.contentWindow.postMessage(
-    JSON.stringify({
-      event: "command",
-      func: command,
-      args: [],
-    }),
-    "*"
-  );
-}
-
 function playYouTubeMusic() {
   if (!youtubeBackgroundPlayerElement || isMusicUnavailable) {
     return;
   }
 
-  if (!youtubeBackgroundPlayerElement.src) {
-    youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(false);
-  }
-
-  sendYouTubeCommand("playVideo");
+  youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(true);
   isMusicPlaying = true;
   updateMusicToggleUI();
 }
@@ -168,7 +149,7 @@ function pauseYouTubeMusic() {
     return;
   }
 
-  sendYouTubeCommand("pauseVideo");
+  youtubeBackgroundPlayerElement.src = "about:blank";
   isMusicPlaying = false;
   updateMusicToggleUI();
 }
@@ -178,14 +159,9 @@ function setupBackgroundMusic() {
     return;
   }
 
-  youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(false);
-
-  youtubeBackgroundPlayerElement.addEventListener("load", () => {
-    isYouTubePlayerLoaded = true;
-    if (isMusicPlaying) {
-      sendYouTubeCommand("playVideo");
-    }
-  });
+  youtubeBackgroundPlayerElement.src = "about:blank";
+  isMusicPlaying = false;
+  updateMusicToggleUI();
 
   youtubeBackgroundPlayerElement.addEventListener("error", () => {
     isMusicUnavailable = true;
@@ -210,6 +186,18 @@ function setupBackgroundMusic() {
   document.addEventListener("click", userGestureHandler, { once: true, passive: true });
   document.addEventListener("touchend", userGestureHandler, { once: true, passive: true });
   document.addEventListener("keydown", userGestureHandler, { once: true });
+}
+
+function setupMusicGate() {
+  if (!musicGateElement || !musicGateButtonElement) {
+    playYouTubeMusic();
+    return;
+  }
+
+  musicGateButtonElement.addEventListener("click", () => {
+    playYouTubeMusic();
+    musicGateElement.classList.add("is-hidden");
+  });
 }
 
 function launchConfetti() {
@@ -491,44 +479,36 @@ function triggerTimeLeftEffect() {
 }
 
 function startCountdown() {
-  const now = new Date();
-  const targetDate = getTargetDate(now);
-  const startDate = getStartDateForTarget(targetDate);
-  activeTargetDate = targetDate;
-  const confettiDuration = triggerFinal48Celebration(now, targetDate);
   setupBackgroundMusic();
-  setupCarousel(confettiDuration);
+  setupMusicGate();
+  setupCarousel(0);
+
+  activeTargetDate = null;
+
+  setCountdown(0);
+  statusElement.textContent = "Heart complete ❤️";
+  statusElement.classList.add("done");
+
+  if (targetInfoElement) {
+    targetInfoElement.textContent = "";
+  }
+
+  if (timeLeftButtonElement) {
+    timeLeftButtonElement.hidden = true;
+  }
+
+  const progressWrapElement = document.querySelector(".progress-wrap");
+  if (progressWrapElement) {
+    progressWrapElement.hidden = true;
+  }
+
+  if (timerElement) {
+    timerElement.hidden = true;
+  }
 
   if (timeLeftButtonElement) {
     timeLeftButtonElement.addEventListener("click", triggerTimeLeftEffect);
   }
-
-  targetInfoElement.textContent = `Reunion target: 19:20 Israel time on Feb 25 (${TARGET_TIMEZONE})`;
-
-  let countdownIntervalId = null;
-
-  function tick() {
-    const current = new Date();
-    const diff = targetDate.getTime() - current.getTime();
-    setProgress(current, startDate, targetDate);
-
-    if (diff <= 0) {
-      setCountdown(0);
-      setProgress(targetDate, startDate, targetDate);
-      statusElement.textContent = "Heart complete again ❤️";
-      statusElement.classList.add("done");
-      if (countdownIntervalId) {
-        clearInterval(countdownIntervalId);
-      }
-      return;
-    }
-
-    statusElement.textContent = "";
-    setCountdown(diff);
-  }
-
-  tick();
-  countdownIntervalId = setInterval(tick, 1000);
 }
 
 startCountdown();

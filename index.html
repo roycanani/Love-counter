@@ -14,7 +14,7 @@
     tabindex="-1"
     allow="autoplay; encrypted-media"
     referrerpolicy="strict-origin-when-cross-origin"
-    style="position: fixed; width: 0; height: 0; border: 0; opacity: 0; pointer-events: none;"
+    style="position: fixed; left: -9999px; top: -9999px; width: 1px; height: 1px; border: 0; opacity: 0; pointer-events: none;"
   ></iframe>
 
   <div id="surprise" class="surprise" aria-live="polite" aria-atomic="true">
@@ -22,10 +22,18 @@
     <p id="surprise-message" class="surprise-message"></p>
   </div>
 
+  <div id="music-gate" class="music-gate" role="dialog" aria-modal="true" aria-labelledby="music-gate-title">
+    <div class="music-gate-card">
+      <h2 id="music-gate-title">Enable music</h2>
+      <p>Tap once to start “Ordinary” from YouTube.</p>
+      <button id="music-gate-button" class="time-left-button" type="button">▶ Start music</button>
+    </div>
+  </div>
+
   <main class="container">
     <p class="eyebrow">One and a half months apart, one heartbeat closer</p>
-    <h1>Counting every moment until I’m back with Jade</h1>
-    <p class="subtitle">A love countdown to our reunion on February 25, 19:20 Israel time</p>
+    <h1>Heart complete ❤️</h1>
+    <p class="subtitle">Play “Ordinary” in the background from YouTube</p>
 
     <p class="message">
       Every sunrise on this trip reminds me how lucky I am to call you my fiancée.
@@ -66,7 +74,7 @@
     </figure>
 
     <button id="time-left-button" class="time-left-button" type="button">✨ Show me how long is left</button>
-    <button id="music-toggle" class="time-left-button" type="button" aria-pressed="false">🎵 Play music</button>
+    <button id="music-toggle" class="time-left-button" type="button" aria-pressed="false">🎵 Play Ordinary (YouTube)</button>
 
     <section class="progress-wrap" aria-label="Travel time progress">
       <div id="progress-percent" class="progress-percent" aria-live="polite">0.00%</div>

@@ -68,6 +68,40 @@ body {
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
 }
 
+.music-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  background: rgba(13, 10, 24, 0.9);
+}
+
+.music-gate.is-hidden {
+  display: none;
+}
+
+.music-gate-card {
+  width: min(520px, 92vw);
+  padding: 1.3rem;
+  border-radius: 20px;
+  text-align: center;
+  background: rgba(43, 23, 64, 0.96);
+  border: 1px solid rgba(255, 213, 234, 0.65);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+}
+
+.music-gate-card h2 {
+  margin: 0 0 0.5rem;
+}
+
+.music-gate-card p {
+  margin: 0 0 1rem;
+  color: #ece8f8;
+}
+
 .container {
   width: min(920px, 92vw);
   text-align: center;
