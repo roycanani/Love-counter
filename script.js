@@ -30,14 +30,17 @@ let isCarouselAutoSlideActive = false;
 let carouselPreloadPromise = null;
 let isMusicUnavailable = false;
 let isMusicPlaying = false;
+let isYouTubePlayerLoaded = false;
 
 const YOUTUBE_SEARCH_QUERY = "ordinary alex warren";
+const TARGET_TIMEZONE = "Asia/Jerusalem";
 
 function getYouTubeEmbedUrl(autoplay) {
   const params = new URLSearchParams({
     autoplay: autoplay ? "1" : "0",
-    controls: "0",
+    controls: "1",
     disablekb: "1",
+    enablejsapi: "1",
     fs: "0",
     iv_load_policy: "3",
     listType: "search",
@@ -48,7 +51,7 @@ function getYouTubeEmbedUrl(autoplay) {
     rel: "0",
   });
 
-  return `https://www.youtube.com/embed?${params.toString()}`;
+  return `https://www.youtube-nocookie.com/embed/videoseries?${params.toString()}`;
 }
 
 function pad(value) {
@@ -56,14 +59,14 @@ function pad(value) {
 }
 
 function getTargetDate(now) {
-  const year = now.getUTCFullYear();
-  const targetThisYear = Date.UTC(year, 1, 25, 19, 20, 0);
+  const year = now.getFullYear();
+  const targetThisYear = new Date(year, 1, 25, 19, 20, 0);
 
-  if (now.getTime() <= targetThisYear) {
-    return new Date(targetThisYear);
+  if (now.getTime() <= targetThisYear.getTime()) {
+    return targetThisYear;
   }
 
-  return new Date(Date.UTC(year + 1, 1, 25, 19, 20, 0));
+  return new Date(year + 1, 1, 25, 19, 20, 0);
 }
 
 function getStartDateForTarget(targetDate) {
@@ -131,12 +134,31 @@ function updateMusicToggleUI() {
   musicToggleElement.disabled = false;
 }
 
+function sendYouTubeCommand(command) {
+  if (!youtubeBackgroundPlayerElement || !youtubeBackgroundPlayerElement.contentWindow || !isYouTubePlayerLoaded) {
+    return;
+  }
+
+  youtubeBackgroundPlayerElement.contentWindow.postMessage(
+    JSON.stringify({
+      event: "command",
+      func: command,
+      args: [],
+    }),
+    "*"
+  );
+}
+
 function playYouTubeMusic() {
   if (!youtubeBackgroundPlayerElement || isMusicUnavailable) {
     return;
   }
 
-  youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(true);
+  if (!youtubeBackgroundPlayerElement.src) {
+    youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(false);
+  }
+
+  sendYouTubeCommand("playVideo");
   isMusicPlaying = true;
   updateMusicToggleUI();
 }
@@ -146,7 +168,7 @@ function pauseYouTubeMusic() {
     return;
   }
 
-  youtubeBackgroundPlayerElement.src = "about:blank";
+  sendYouTubeCommand("pauseVideo");
   isMusicPlaying = false;
   updateMusicToggleUI();
 }
@@ -155,6 +177,15 @@ function setupBackgroundMusic() {
   if (!youtubeBackgroundPlayerElement) {
     return;
   }
+
+  youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(false);
+
+  youtubeBackgroundPlayerElement.addEventListener("load", () => {
+    isYouTubePlayerLoaded = true;
+    if (isMusicPlaying) {
+      sendYouTubeCommand("playVideo");
+    }
+  });
 
   youtubeBackgroundPlayerElement.addEventListener("error", () => {
     isMusicUnavailable = true;
@@ -179,8 +210,6 @@ function setupBackgroundMusic() {
   document.addEventListener("click", userGestureHandler, { once: true, passive: true });
   document.addEventListener("touchend", userGestureHandler, { once: true, passive: true });
   document.addEventListener("keydown", userGestureHandler, { once: true });
-
-  playYouTubeMusic();
 }
 
 function launchConfetti() {
@@ -474,7 +503,7 @@ function startCountdown() {
     timeLeftButtonElement.addEventListener("click", triggerTimeLeftEffect);
   }
 
-  targetInfoElement.textContent = `Reunion target: ${targetDate.toUTCString()} (GMT) / 21:20 Israel time on Feb 25`;
+  targetInfoElement.textContent = `Reunion target: 19:20 Israel time on Feb 25 (${TARGET_TIMEZONE})`;
 
   let countdownIntervalId = null;
 
