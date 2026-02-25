@@ -14,7 +14,7 @@ const timeLeftButtonElement = document.getElementById("time-left-button");
 const carouselElement = document.getElementById("photo-carousel");
 const carouselPrevElement = document.getElementById("carousel-prev");
 const carouselNextElement = document.getElementById("carousel-next");
-const backgroundMusicElement = document.getElementById("background-music");
+const youtubeBackgroundPlayerElement = document.getElementById("youtube-background-player");
 const musicToggleElement = document.getElementById("music-toggle");
 
 const CONFETTI_DURATION_MS = 7200;
@@ -28,7 +28,28 @@ let carouselAutoSlideTimeoutId = null;
 let carouselAutoStartTimeoutId = null;
 let isCarouselAutoSlideActive = false;
 let carouselPreloadPromise = null;
-let isMusicUserActivated = false;
+let isMusicUnavailable = false;
+let isMusicPlaying = false;
+
+const YOUTUBE_SEARCH_QUERY = "ordinary alex warren";
+
+function getYouTubeEmbedUrl(autoplay) {
+  const params = new URLSearchParams({
+    autoplay: autoplay ? "1" : "0",
+    controls: "0",
+    disablekb: "1",
+    fs: "0",
+    iv_load_policy: "3",
+    listType: "search",
+    list: YOUTUBE_SEARCH_QUERY,
+    loop: "1",
+    modestbranding: "1",
+    playsinline: "1",
+    rel: "0",
+  });
+
+  return `https://www.youtube.com/embed?${params.toString()}`;
+}
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -87,75 +108,79 @@ function setCountdown(diffMs) {
 }
 
 function updateMusicToggleUI() {
-  if (!musicToggleElement || !backgroundMusicElement) {
+  if (!musicToggleElement || !youtubeBackgroundPlayerElement) {
     return;
   }
 
-  if (backgroundMusicElement.paused) {
+  if (isMusicUnavailable) {
+    musicToggleElement.textContent = "🎵 Music unavailable";
+    musicToggleElement.setAttribute("aria-pressed", "false");
+    musicToggleElement.disabled = true;
+    return;
+  }
+
+  if (!isMusicPlaying) {
     musicToggleElement.textContent = "🎵 Play music";
     musicToggleElement.setAttribute("aria-pressed", "false");
+    musicToggleElement.disabled = false;
     return;
   }
 
   musicToggleElement.textContent = "⏸ Pause music";
   musicToggleElement.setAttribute("aria-pressed", "true");
+  musicToggleElement.disabled = false;
 }
 
-function tryPlayBackgroundMusic() {
-  if (!backgroundMusicElement) {
+function playYouTubeMusic() {
+  if (!youtubeBackgroundPlayerElement || isMusicUnavailable) {
     return;
   }
 
-  const playPromise = backgroundMusicElement.play();
-  if (!playPromise || typeof playPromise.then !== "function") {
-    updateMusicToggleUI();
+  youtubeBackgroundPlayerElement.src = getYouTubeEmbedUrl(true);
+  isMusicPlaying = true;
+  updateMusicToggleUI();
+}
+
+function pauseYouTubeMusic() {
+  if (!youtubeBackgroundPlayerElement) {
     return;
   }
 
-  playPromise
-    .then(() => {
-      isMusicUserActivated = true;
-      updateMusicToggleUI();
-    })
-    .catch(() => {
-      updateMusicToggleUI();
-    });
+  youtubeBackgroundPlayerElement.src = "about:blank";
+  isMusicPlaying = false;
+  updateMusicToggleUI();
 }
 
 function setupBackgroundMusic() {
-  if (!backgroundMusicElement) {
+  if (!youtubeBackgroundPlayerElement) {
     return;
   }
 
-  backgroundMusicElement.loop = true;
-  backgroundMusicElement.volume = 0.35;
+  youtubeBackgroundPlayerElement.addEventListener("error", () => {
+    isMusicUnavailable = true;
+    isMusicPlaying = false;
+    updateMusicToggleUI();
+  });
 
   if (musicToggleElement) {
     musicToggleElement.hidden = false;
     musicToggleElement.addEventListener("click", () => {
-      if (!backgroundMusicElement.paused) {
-        backgroundMusicElement.pause();
-        updateMusicToggleUI();
+      if (isMusicPlaying) {
+        pauseYouTubeMusic();
         return;
       }
 
-      tryPlayBackgroundMusic();
+      playYouTubeMusic();
     });
   }
 
-  const userGestureHandler = () => {
-    if (isMusicUserActivated) {
-      return;
-    }
-
-    tryPlayBackgroundMusic();
-  };
+  const userGestureHandler = () => playYouTubeMusic();
 
   document.addEventListener("click", userGestureHandler, { once: true, passive: true });
   document.addEventListener("touchend", userGestureHandler, { once: true, passive: true });
   document.addEventListener("keydown", userGestureHandler, { once: true });
 
-  tryPlayBackgroundMusic();
+  playYouTubeMusic();
 }
 
 function launchConfetti() {
@@ -451,6 +476,8 @@ function startCountdown() {
 
   targetInfoElement.textContent = `Reunion target: ${targetDate.toUTCString()} (GMT) / 21:20 Israel time on Feb 25`;
 
+  let countdownIntervalId = null;
+
   function tick() {
     const current = new Date();
     const diff = targetDate.getTime() - current.getTime();
@@ -461,7 +488,9 @@ function startCountdown() {
       setProgress(targetDate, startDate, targetDate);
       statusElement.textContent = "Heart complete again ❤️";
       statusElement.classList.add("done");
-      clearInterval(interval);
+      if (countdownIntervalId) {
+        clearInterval(countdownIntervalId);
+      }
       return;
     }
 
@@ -470,7 +499,7 @@ function startCountdown() {
   }
 
   tick();
-  const interval = setInterval(tick, 1000);
+  countdownIntervalId = setInterval(tick, 1000);
 }
 
 startCountdown();

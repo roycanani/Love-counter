@@ -8,11 +8,10 @@ Open `index.html` in your browser.
 
 ## Background music
 
-To play the song "Ordinary" in the background (looping, with browser format fallback), place at least one of these files in the project root:
+Background music is streamed remotely from YouTube using the query "Ordinary Alex Warren".
 
-- `ordinary.mp3`
-- `ordinary.ogg`
-- `ordinary.m4a`
+- It loops in the background.
+- If autoplay is blocked, press the music button to start playback.
 
 ## Files
 
