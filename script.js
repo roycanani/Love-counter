@@ -14,6 +14,8 @@ const timeLeftButtonElement = document.getElementById("time-left-button");
 const carouselElement = document.getElementById("photo-carousel");
 const carouselPrevElement = document.getElementById("carousel-prev");
 const carouselNextElement = document.getElementById("carousel-next");
+const backgroundMusicElement = document.getElementById("background-music");
+const musicToggleElement = document.getElementById("music-toggle");
 
 const CONFETTI_DURATION_MS = 7200;
 const CAROUSEL_SLIDE_INTERVAL_MS = 6000;
@@ -26,6 +28,7 @@ let carouselAutoSlideTimeoutId = null;
 let carouselAutoStartTimeoutId = null;
 let isCarouselAutoSlideActive = false;
 let carouselPreloadPromise = null;
+let isMusicUserActivated = false;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -75,11 +78,84 @@ function setCountdown(diffMs) {
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+  const isLessThanOneHour = diffMs > 0 && diffMs < 60 * 60 * 1000;
 
   daysElement.textContent = pad(days);
-  hoursElement.textContent = pad(hours);
+  hoursElement.textContent = isLessThanOneHour ? pad(minutes) : pad(hours);
   minutesElement.textContent = pad(minutes);
   secondsElement.textContent = pad(seconds);
+}
+
+function updateMusicToggleUI() {
+  if (!musicToggleElement || !backgroundMusicElement) {
+    return;
+  }
+
+  if (backgroundMusicElement.paused) {
+    musicToggleElement.textContent = "🎵 Play music";
+    musicToggleElement.setAttribute("aria-pressed", "false");
+    return;
+  }
+
+  musicToggleElement.textContent = "⏸ Pause music";
+  musicToggleElement.setAttribute("aria-pressed", "true");
+}
+
+function tryPlayBackgroundMusic() {
+  if (!backgroundMusicElement) {
+    return;
+  }
+
+  const playPromise = backgroundMusicElement.play();
+  if (!playPromise || typeof playPromise.then !== "function") {
+    updateMusicToggleUI();
+    return;
+  }
+
+  playPromise
+    .then(() => {
+      isMusicUserActivated = true;
+      updateMusicToggleUI();
+    })
+    .catch(() => {
+      updateMusicToggleUI();
+    });
+}
+
+function setupBackgroundMusic() {
+  if (!backgroundMusicElement) {
+    return;
+  }
+
+  backgroundMusicElement.loop = true;
+  backgroundMusicElement.volume = 0.35;
+
+  if (musicToggleElement) {
+    musicToggleElement.hidden = false;
+    musicToggleElement.addEventListener("click", () => {
+      if (!backgroundMusicElement.paused) {
+        backgroundMusicElement.pause();
+        updateMusicToggleUI();
+        return;
+      }
+
+      tryPlayBackgroundMusic();
+    });
+  }
+
+  const userGestureHandler = () => {
+    if (isMusicUserActivated) {
+      return;
+    }
+
+    tryPlayBackgroundMusic();
+  };
+
+  document.addEventListener("click", userGestureHandler, { once: true, passive: true });
+  document.addEventListener("touchend", userGestureHandler, { once: true, passive: true });
+  document.addEventListener("keydown", userGestureHandler, { once: true });
+
+  tryPlayBackgroundMusic();
 }
 
 function launchConfetti() {
@@ -366,6 +442,7 @@ function startCountdown() {
   const startDate = getStartDateForTarget(targetDate);
   activeTargetDate = targetDate;
   const confettiDuration = triggerFinal48Celebration(now, targetDate);
+  setupBackgroundMusic();
   setupCarousel(confettiDuration);
 
   if (timeLeftButtonElement) {
@@ -382,7 +459,7 @@ function startCountdown() {
     if (diff <= 0) {
       setCountdown(0);
       setProgress(targetDate, startDate, targetDate);
-      statusElement.textContent = "You made it — welcome back to Jade. 💖";
+      statusElement.textContent = "Heart complete again ❤️";
       statusElement.classList.add("done");
       clearInterval(interval);
       return;

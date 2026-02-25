@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <audio id="background-music" preload="auto" loop autoplay playsinline>
+    <source src="ordinary.mp3" type="audio/mpeg" />
+    <source src="ordinary.ogg" type="audio/ogg" />
+    <source src="ordinary.m4a" type="audio/mp4" />
+  </audio>
+
   <div id="surprise" class="surprise" aria-live="polite" aria-atomic="true">
     <canvas id="confetti-layer" class="confetti-layer" aria-hidden="true"></canvas>
     <p id="surprise-message" class="surprise-message"></p>
@@ -56,6 +62,7 @@
     </figure>
 
     <button id="time-left-button" class="time-left-button" type="button">✨ Show me how long is left</button>
+    <button id="music-toggle" class="time-left-button" type="button" aria-pressed="false">🎵 Play music</button>
 
     <section class="progress-wrap" aria-label="Travel time progress">
       <div id="progress-percent" class="progress-percent" aria-live="polite">0.00%</div>
